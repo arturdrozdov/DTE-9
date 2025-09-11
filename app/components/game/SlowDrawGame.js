@@ -1,6 +1,11 @@
+"use client";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React, { useRef, useEffect, useState } from "react";
 
 const SlowDrawGame = () => {
+  const router = useRouter();
+
   const canvasRef = useRef(null);
 
   const [pathPoints, setPathPoints] = useState([]);
@@ -15,23 +20,31 @@ const SlowDrawGame = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [trackRed, setTrackRed] = useState(false);
   const [showRestart, setShowRestart] = useState(false);
-  // const [trackStatus, setTrackStatus] = useState([]); // each point status
+  const [modalFor, setModalFor] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [hasFinished, setHasFinished] = useState(false);
 
-
-  const canvasWidth = 600;
-  const canvasHeight = 400;
+  const canvasWidth = 350;
+  const canvasHeight = 600;
   const dragRadius = 30;
   const segmentsCount = 6;
 
-  // --- Generate smooth U-like road ---
+  const onModalAction = () => {
+    if (!hasFinished) {
+      setModalVisible(false);
+    } else {
+      router.push("/modal");
+    }
+  }
+
   const generateSmoothRoad = () => {
     const basePoints = [
-      { x: 100, y: 40 },
-      { x: 180, y: 60 },
-      { x: 100, y: 160 },
-      { x: 160, y: 200 },
-      { x: 180, y: 300 },
-      { x: 140, y: 350 },
+      { x: 80, y: 40 },
+      { x: 160, y: 60 },
+      { x: 80, y: 160 },
+      { x: 140, y: 200 },
+      { x: 160, y: 300 },
+      { x: 120, y: 350 },
       { x: 200, y: 380 },
       { x: 240, y: 200 },
       { x: 240, y: 100 },
@@ -87,10 +100,20 @@ const SlowDrawGame = () => {
     ctx.lineWidth = 10;
 
     if (trackRed) {
-      ctx.strokeStyle = "red";
+      // Background full track
+      ctx.strokeStyle = "rgba(124, 121, 206, 0.2)";
       ctx.beginPath();
       ctx.moveTo(pathPoints[0].x, pathPoints[0].y);
       pathPoints.forEach((p) => ctx.lineTo(p.x, p.y));
+      ctx.stroke();
+
+      // Only the passed portion in red
+      ctx.strokeStyle = "red";
+      ctx.beginPath();
+      ctx.moveTo(pathPoints[0].x, pathPoints[0].y);
+      for (let i = 1; i <= dotIndex; i++) {
+        ctx.lineTo(pathPoints[i].x, pathPoints[i].y);
+      }
       ctx.stroke();
     } else {
       ctx.strokeStyle = "rgba(124, 121, 206, 0.2)";
@@ -112,20 +135,42 @@ const SlowDrawGame = () => {
 
     }
 
-    ctx.fillStyle = "green";
+    // ctx.fillStyle = "rgb(124, 121, 206)";
     ctx.beginPath();
-    ctx.arc(pathPoints[0].x, pathPoints[0].y, 10, 0, Math.PI * 2);
+    // ctx.arc(pathPoints[0].x, pathPoints[0].y, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "normal 14px 'DM Sans', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("Start", pathPoints[0].x - 15, pathPoints[0].y + 45);
+
+    // ctx.fillStyle = "rgba(124, 121, 206, 0.3)";
+    ctx.beginPath();
+    // ctx.arc(pathPoints[pathPoints.length - 1].x, pathPoints[pathPoints.length - 1].y, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "normal 14px 'DM Sans', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("Finish", pathPoints[pathPoints.length - 1].x - 15, pathPoints[pathPoints.length - 1].y + 25);
+
+    ctx.beginPath();
+    ctx.arc(dotPos.x, dotPos.y, 30, 0, Math.PI * 2);
+    ctx.fillStyle = isDragging ? "rgba(37, 53, 89, 0.5)" : "#253559";
     ctx.fill();
 
-    ctx.fillStyle = "red";
     ctx.beginPath();
-    ctx.arc(pathPoints[pathPoints.length - 1].x, pathPoints[pathPoints.length - 1].y, 10, 0, Math.PI * 2);
+    ctx.arc(dotPos.x, dotPos.y, 10, 0, Math.PI * 2);
+    ctx.fillStyle = "white";
     ctx.fill();
 
-    ctx.fillStyle = "blue";
-    ctx.beginPath();
-    ctx.arc(dotPos.x, dotPos.y, 8, 0, Math.PI * 2);
-    ctx.fill();
+    if (trackRed && showRestart) {
+      ctx.font = "16px sans-serif";
+      ctx.fillStyle = "red";
+      ctx.textAlign = "center";
+      ctx.fillText("Too fast!", dotPos.x, dotPos.y + 45);
+      ctx.fillText("Try again.", dotPos.x, dotPos.y + 65);
+
+    }
   };
 
   useEffect(() => {
@@ -161,9 +206,10 @@ const SlowDrawGame = () => {
       setIsDragging(true);
       setSegmentStartTime(performance.now());
       setErrorMessage("");
-      setTrackRed(false);
+      // setTrackRed(false);
       if (raceNumber > 1) setCurrentTimes(Array(segmentsCount).fill(null)); // only reset for 2nd+ attempts
     }
+    if (trackRed) restart();
   };
 
   const handleMove = (e) => {
@@ -186,7 +232,6 @@ const SlowDrawGame = () => {
       // --- segment timing ---
       const dotsPerSegment = Math.floor(pathPoints.length / segmentsCount);
       for (let seg = 0; seg < segmentsCount; seg++) {
-        const segStart = seg * dotsPerSegment;
         const segEnd =
           seg === segmentsCount - 1 ? pathPoints.length - 1 : (seg + 1) * dotsPerSegment - 1;
 
@@ -214,12 +259,18 @@ const SlowDrawGame = () => {
         }
       }
 
-      if (nextIndex === pathPoints.length - 1) {
+      if (nextIndex === pathPoints.length - 1 && raceNumber === 1) {
         setRaceNumber(raceNumber + 1);
         setDotIndex(0);
         setDotPos(pathPoints[0]);
         setIsDragging(false);
         setSegmentStartTime(null);
+        setModalFor("calibration");
+        setModalVisible(true);
+      } else if (nextIndex === pathPoints.length - 1 && raceNumber > 1) {
+        setHasFinished(true);
+        setModalFor("success");
+        setModalVisible(true);
       }
     }
   };
@@ -229,14 +280,25 @@ const SlowDrawGame = () => {
     setSegmentStartTime(null);
   };
 
+  const restart = () => {
+    setDotIndex(0);
+    setDotPos(pathPoints[0]);
+    setTrackRed(false);
+    setErrorMessage("");
+    setShowRestart(false);
+    setIsDragging(false);
+    setSegmentStartTime(null);
+  }
+
   return (
-    <div style={{ textAlign: "center" }}>
-      <h2>Drag the blue dot along the road</h2>
+    <div>
+      <h2 className="text-[24px] leading-[24px] font-medium text-white mb-4 font-bold">{raceNumber === 1 ? 'Calibration Phase' : 'Challenge Phase'}</h2>
+      <p className="text-[16px] font-normal">{raceNumber === 1 ? 'Trace the path at your normal pace. This will set your personal speed baseline.' : 'Now trace the same path, but slower. Keep your pace under the target speed.'}</p>
       <canvas
         ref={canvasRef}
         width={canvasWidth}
         height={canvasHeight}
-        style={{ border: "1px solid black", cursor: "pointer", touchAction: "none" }}
+        style={{ cursor: "pointer", touchAction: "none" }}
         onMouseDown={handleDown}
         onMouseMove={handleMove}
         onMouseUp={handleUp}
@@ -249,16 +311,7 @@ const SlowDrawGame = () => {
       {errorMessage && <div style={{ color: "red", marginTop: "10px" }}>{errorMessage}</div>}
       {showRestart && (
         <button
-          onClick={() => {
-            setDotIndex(0);
-            setDotPos(pathPoints[0]);
-            setTrackRed(false);
-            setErrorMessage("");
-            setShowRestart(false);
-            setIsDragging(false);
-            setSegmentStartTime(null);
-            // Notice: we DO NOT clear currentTimes or firstAttemptTimes
-          }}
+          onClick={() => restart()}
           style={{
             marginTop: "10px",
             padding: "8px 16px",
@@ -271,18 +324,37 @@ const SlowDrawGame = () => {
           Restart
         </button>
       )}
-      <h3>Segment Times (ms)</h3>
-      <div style={{ display: "flex", justifyContent: "center", gap: "20px", marginTop: "10px" }}>
-        {currentTimes.map((time, idx) => (
-          <div key={idx} style={{ textAlign: "center" }}>
-            <div>Part {idx + 1}</div>
-            <div style={{ fontWeight: "bold" }}>{time !== null ? time : "-"} ms</div>
-            <div style={{ fontSize: "12px", color: "gray" }}>
-              First: {firstAttemptTimes[idx] !== null ? firstAttemptTimes[idx] : "-"} ms
+      {modalVisible && (
+        <div className='fixed inset-0 z-[999] flex items-center justify-center px-4'>
+          <div
+            className='absolute inset-0 bg-black/60'
+            onClick={() => setModalVisible(false)}
+          />
+          <div className='relative max-w-md w-full bg-[#1b1b1b] rounded-2xl p-6 shadow-2xl border border-white/6'>
+            <h3 className='text-2xl font-bold mb-3 text-center'>
+              {modalFor === "calibration"
+                ? "Calibration complete!"
+                : "Success! You stayed calm and controlled."}
+            </h3>
+            <p className='text-white/70 text-center'>
+              {modalFor === "calibration"
+                ? "Your average speed has been recorded. Get ready for the challenge."
+                : ""}
+            </p>
+
+            <div className='flex justify-center my-6'>
+              <Image src='/check.png' alt='Done' width={60} height={60} />
             </div>
+
+            <button
+              onClick={onModalAction}
+              className='w-full py-3 rounded-full bg-white text-black font-medium'
+            >
+              Go to Challenge Phase
+            </button>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

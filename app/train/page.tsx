@@ -21,7 +21,7 @@ export default function FlashCard() {
         />
 
         {/* Content */}
-        <div className="relative z-10 h-dvh px-4 pt-4 pb-[3.125rem] flex flex-col">
+        <div className="relative z-10 h-dvh px-4 pt-4 pb-[3.125rem] flex flex-col overflow-scroll">
           {/* Header */}
           {isBackBtn && (
             <div className="flex gap-3 mb-[3.375rem] items-center">

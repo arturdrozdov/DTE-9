@@ -35,7 +35,7 @@ export default function Flashcards() {
   };
 
   const handleBack = () => {
-    console.log('BACK');    router.push('/train');
+    router.push('/train');
   };
 
   const triggerSwipeUp = (data?) => {
@@ -74,7 +74,7 @@ export default function Flashcards() {
         >
           {cards.map((card, index) => (
             <SwiperSlide key={index}>
-              <div className="absolute top-[15%] left-1/2 -translate-x-1/2 flex flex-col space-y-4 w-full max-w-md px-2">
+              <div className="absolute top-[10%] left-1/2 -translate-x-1/2 flex flex-col space-y-4 w-full max-w-md px-2">
                 <Counter
                   count={index}
                   length={cards.length}
@@ -103,7 +103,7 @@ export default function Flashcards() {
                 )}
               </div>
               {showSwipeUp && (
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce text-white">
+                <div className="absolute bottom-16 left-1/2 -translate-x-1/2 animate-bounce text-white">
                   <Image
                     src="/swipeUp.svg"
                     alt="swipeUp"

@@ -28,7 +28,7 @@ export default function QuestionsPage() {
     if (reason === "I\’m clear on my goals and making progress.") {
       setSelectedReason(reason);
       // Navigate to modal after completing all questions
-      router.push('/modal');
+      router.push('/modal?train=true');
     }
   };
 

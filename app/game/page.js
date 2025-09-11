@@ -20,7 +20,7 @@ export default function QuestionsPage() {
         <div className="relative z-10 h-dvh px-4 pt-[1rem] pb-[3.125rem]">
           <div className="h-full w-full flex flex-col">
 
-            <div className='flex gap-[0.938rem] mb-[3.375rem] items-center'>
+            <div className='flex mb-6 items-center'>
               <BackButton onClick={handleBack} />
             </div>
           <SlowDrawGame/>
