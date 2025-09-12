@@ -7,7 +7,7 @@ import SlowDrawGame from "../components/game/SlowDrawGame";
 export default function QuestionsPage() {
   const router = useRouter();
   const handleBack = () => {
-    router.push('/notification');
+    router.push('/flashcards');
   };
   return (
     <div className="w-full h-full flex justify-center">
