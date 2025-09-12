@@ -129,6 +129,7 @@ export default function Assessment() {
       updateProgress(selectedIndex);
     }, 60);
     return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedIndex, questions.length]);
 
   const computeAndPersistResults = (aggregate: Record<string, number>) => {
