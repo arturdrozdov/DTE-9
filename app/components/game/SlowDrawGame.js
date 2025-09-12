@@ -26,7 +26,7 @@ const SlowDrawGame = () => {
 
   const canvasWidth = 350;
   const canvasHeight = 600;
-  const dragRadius = 60;
+  const dragRadius = 70;
   const segmentsCount = 6;
 
   const onModalAction = () => {
@@ -48,7 +48,7 @@ const SlowDrawGame = () => {
       { x: 210, y: 420 },
       { x: 250, y: 200 },
       { x: 250, y: 100 },
-      { x: 310, y: 120 },
+      { x: 310, y: 80 },
     ];
 
     const jitter = 15;
