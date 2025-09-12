@@ -212,25 +212,96 @@ const SlowDrawGame = () => {
     if (trackRed) restart();
   };
 
+  // const handleMove = (e) => {
+  //   if (!isDragging || trackRed) return;
+  //   const { x: mouseX, y: mouseY } = getCoords(e);
+
+  //   const maxIndex = Math.min(dotIndex + 1, pathPoints.length - 1);
+
+  //   let nextIndex = dotIndex;
+  //   for (let i = dotIndex + 1; i <= maxIndex; i++) {
+  //     const distToCursor = Math.hypot(pathPoints[i].x - mouseX, pathPoints[i].y - mouseY);
+  //     const distCurrent = Math.hypot(pathPoints[nextIndex].x - mouseX, pathPoints[nextIndex].y - mouseY);
+  //     if (distToCursor < distCurrent) nextIndex = i;
+  //   }
+
+  //   if (nextIndex > dotIndex) {
+  //     setDotIndex(nextIndex);
+  //     setDotPos(pathPoints[nextIndex]);
+
+  //     // --- segment timing ---
+  //     const dotsPerSegment = Math.floor(pathPoints.length / segmentsCount);
+  //     for (let seg = 0; seg < segmentsCount; seg++) {
+  //       const segEnd =
+  //         seg === segmentsCount - 1 ? pathPoints.length - 1 : (seg + 1) * dotsPerSegment - 1;
+
+  //       if (dotIndex >= segEnd && currentTimes[seg] === null && segmentStartTime) {
+  //         const elapsed = performance.now() - segmentStartTime;
+  //         const newTimes = [...currentTimes];
+  //         newTimes[seg] = Math.round(elapsed);
+  //         setCurrentTimes(newTimes);
+
+  //         if (raceNumber === 1) {
+  //           const first = [...firstAttemptTimes];
+  //           first[seg] = Math.round(elapsed);
+  //           setFirstAttemptTimes(first);
+  //         } else if (
+  //           firstAttemptTimes[seg] !== null &&
+  //           elapsed < firstAttemptTimes[seg]
+  //         ) {
+  //           setTrackRed(true);
+  //           setErrorMessage(`Too fast on segment ${seg + 1}!`);
+  //           setIsDragging(false);
+  //           setShowRestart(true);
+  //         }
+
+  //         setSegmentStartTime(performance.now());
+  //       }
+  //     }
+
+  //     if (nextIndex === pathPoints.length - 1 && raceNumber === 1) {
+  //       setRaceNumber(raceNumber + 1);
+  //       setDotIndex(0);
+  //       setDotPos(pathPoints[0]);
+  //       setIsDragging(false);
+  //       setSegmentStartTime(null);
+  //       setModalFor("calibration");
+  //       setModalVisible(true);
+  //     } else if (nextIndex === pathPoints.length - 1 && raceNumber > 1) {
+  //       setHasFinished(true);
+  //       setModalFor("success");
+  //       setModalVisible(true);
+  //     }
+  //   }
+  // };
+
   const handleMove = (e) => {
     if (!isDragging || trackRed) return;
+
     const { x: mouseX, y: mouseY } = getCoords(e);
-
-    const maxIndex = Math.min(dotIndex + 1, pathPoints.length - 1);
-
     let nextIndex = dotIndex;
-    for (let i = dotIndex + 1; i <= maxIndex; i++) {
+    const reachRadius = 50; // max distance to allow moving to a point
+
+    // Find the furthest reachable point along the path
+    for (let i = dotIndex + 1; i < pathPoints.length; i++) {
       const distToCursor = Math.hypot(pathPoints[i].x - mouseX, pathPoints[i].y - mouseY);
       const distCurrent = Math.hypot(pathPoints[nextIndex].x - mouseX, pathPoints[nextIndex].y - mouseY);
-      if (distToCursor < distCurrent) nextIndex = i;
+
+      // Only move if closer and within reach
+      if (distToCursor < distCurrent && distToCursor < reachRadius) {
+        nextIndex = i;
+      } else if (distToCursor >= reachRadius) {
+        break; // stop checking further points
+      }
     }
 
     if (nextIndex > dotIndex) {
       setDotIndex(nextIndex);
       setDotPos(pathPoints[nextIndex]);
 
-      // --- segment timing ---
+      // --- Segment timing logic ---
       const dotsPerSegment = Math.floor(pathPoints.length / segmentsCount);
+
       for (let seg = 0; seg < segmentsCount; seg++) {
         const segEnd =
           seg === segmentsCount - 1 ? pathPoints.length - 1 : (seg + 1) * dotsPerSegment - 1;
@@ -259,18 +330,21 @@ const SlowDrawGame = () => {
         }
       }
 
-      if (nextIndex === pathPoints.length - 1 && raceNumber === 1) {
-        setRaceNumber(raceNumber + 1);
-        setDotIndex(0);
-        setDotPos(pathPoints[0]);
-        setIsDragging(false);
-        setSegmentStartTime(null);
-        setModalFor("calibration");
-        setModalVisible(true);
-      } else if (nextIndex === pathPoints.length - 1 && raceNumber > 1) {
-        setHasFinished(true);
-        setModalFor("success");
-        setModalVisible(true);
+      // --- Race progress ---
+      if (nextIndex === pathPoints.length - 1) {
+        if (raceNumber === 1) {
+          setRaceNumber(raceNumber + 1);
+          setDotIndex(0);
+          setDotPos(pathPoints[0]);
+          setIsDragging(false);
+          setSegmentStartTime(null);
+          setModalFor("calibration");
+          setModalVisible(true);
+        } else {
+          setHasFinished(true);
+          setModalFor("success");
+          setModalVisible(true);
+        }
       }
     }
   };
