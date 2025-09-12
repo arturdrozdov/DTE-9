@@ -216,7 +216,7 @@ const SlowDrawGame = () => {
     if (!isDragging || trackRed) return;
     const { x: mouseX, y: mouseY } = getCoords(e);
 
-    const maxIndex = Math.min(dotIndex + 3, pathPoints.length - 1);
+    const maxIndex = Math.min(dotIndex + 1, pathPoints.length - 1);
 
     let nextIndex = dotIndex;
     for (let i = dotIndex + 1; i <= maxIndex; i++) {
