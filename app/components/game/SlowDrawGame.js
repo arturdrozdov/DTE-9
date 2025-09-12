@@ -48,7 +48,7 @@ const SlowDrawGame = () => {
       { x: 210, y: 420 },
       { x: 250, y: 200 },
       { x: 250, y: 100 },
-      { x: 310, y: 80 },
+      { x: 310, y: 30 },
     ];
 
     const jitter = 15;

@@ -84,8 +84,8 @@ export default function DashboardInner() {
         stored.execute === "completed"
           ? "completed"
           : stored.execute === "available"
-          ? "available"
-          : "locked";
+            ? "available"
+            : "locked";
 
       setDiscoverState(d);
       setTrainState(t);
@@ -161,7 +161,7 @@ export default function DashboardInner() {
           localStorage.removeItem(JUST_COMPLETED_KEY);
         }, 60);
       }
-    } catch {}
+    } catch { }
   }, [showDiscoverOnly]);
 
   useEffect(() => {
@@ -196,8 +196,11 @@ export default function DashboardInner() {
     router.push("/execute");
   };
 
-  const onModalAction = () => {
-    setModalVisible(false);
+  const onModalAction = (e) => {
+    console.log(e);
+
+    e.preventDefault();
+    e.stopPropagation();
     if (modalFor === "train") router.push("/train");
     if (modalFor === "execute") router.push("/execute");
     setModalFor(null);
@@ -289,8 +292,8 @@ export default function DashboardInner() {
               <h3 className='text-2xl font-bold mb-4'>Today&apos;s Plan</h3>
 
               {discoverState === "completed" &&
-              trainState === "completed" &&
-              executeState === "completed" ? (
+                trainState === "completed" &&
+                executeState === "completed" ? (
                 <div
                   className='rounded-2xl p-8 flex flex-col items-center justify-center text-center'
                   style={{
@@ -391,9 +394,8 @@ export default function DashboardInner() {
 
                     {/* Train */}
                     <div
-                      className={`relative rounded-[999px] px-4 py-3 flex items-center gap-4 ${
-                        trainState === "locked" ? "opacity-60" : ""
-                      }`}
+                      className={`relative rounded-[999px] px-4 py-3 flex items-center gap-4 ${trainState === "locked" ? "opacity-60" : ""
+                        }`}
                       style={{
                         background:
                           "linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00))",
@@ -412,11 +414,10 @@ export default function DashboardInner() {
                       <div className='flex-1'>
                         <div className='flex items-center justify-between'>
                           <div
-                            className={`${
-                              trainState === "locked"
+                            className={`${trainState === "locked"
                                 ? "text-white/60"
                                 : "text-white"
-                            } text-lg font-medium`}
+                              } text-lg font-medium`}
                           >
                             Train
                           </div>
@@ -495,9 +496,8 @@ export default function DashboardInner() {
 
                     {/* Execute */}
                     <div
-                      className={`relative rounded-[999px] px-4 py-3 flex items-center gap-4 ${
-                        executeState === "locked" ? "opacity-60" : ""
-                      }`}
+                      className={`relative rounded-[999px] px-4 py-3 flex items-center gap-4 ${executeState === "locked" ? "opacity-60" : ""
+                        }`}
                       style={{
                         background:
                           "linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00))",
@@ -516,11 +516,10 @@ export default function DashboardInner() {
                       <div className='flex-1'>
                         <div className='flex items-center justify-between'>
                           <div
-                            className={`${
-                              executeState === "locked"
+                            className={`${executeState === "locked"
                                 ? "text-white/60"
                                 : "text-white"
-                            } text-lg font-medium`}
+                              } text-lg font-medium`}
                           >
                             Execute
                           </div>
