@@ -39,7 +39,7 @@ export default function Flashcards() {
   };
 
   const triggerSwipeUp = (data?) => {
-    const activeIndex = data?.activeIndex;
+    const activeIndex = data?.activeIndex || 0;
     if (activeIndex < cards.length - 1) {
       setShowSwipeUp(true);
       setTimeout(() => setShowSwipeUp(false), 2000);

@@ -40,15 +40,15 @@ const SlowDrawGame = () => {
   const generateSmoothRoad = () => {
     const basePoints = [
       { x: 80, y: 40 },
-      { x: 160, y: 60 },
-      { x: 80, y: 160 },
-      { x: 140, y: 200 },
-      { x: 160, y: 300 },
-      { x: 120, y: 350 },
-      { x: 200, y: 380 },
-      { x: 240, y: 200 },
-      { x: 240, y: 100 },
-      { x: 300, y: 160 },
+      { x: 160, y: 100 },
+      { x: 80, y: 200 },
+      { x: 140, y: 240 },
+      { x: 160, y: 340 },
+      { x: 120, y: 490 },
+      { x: 220, y: 520 },
+      { x: 260, y: 200 },
+      { x: 260, y: 100 },
+      { x: 320, y: 120 },
     ];
 
     const jitter = 15;
@@ -207,7 +207,6 @@ const SlowDrawGame = () => {
       setIsDragging(true);
       setSegmentStartTime(performance.now());
       setErrorMessage("");
-      // setTrackRed(false);
       if (raceNumber > 1) setCurrentTimes(Array(segmentsCount).fill(null)); // only reset for 2nd+ attempts
     }
     if (trackRed) restart();
@@ -294,7 +293,7 @@ const SlowDrawGame = () => {
   return (
     <div>
       <h2 className="text-[24px] leading-[24px] font-medium text-white mb-4 font-bold">{raceNumber === 1 ? 'Calibration Phase' : 'Challenge Phase'}</h2>
-      <p className="text-[16px] font-normal">{raceNumber === 1 ? 'Trace the path at your normal pace. This will set your personal speed baseline.' : 'Now trace the same path, but slower. Keep your pace under the target speed.'}</p>
+      <p className="text-[16px] mb-12 font-normal">{raceNumber === 1 ? 'Trace the path at your normal pace. This will set your personal speed baseline.' : 'Now trace the same path, but slower. Keep your pace under the target speed.'}</p>
       <canvas
         ref={canvasRef}
         width={canvasWidth}
@@ -308,23 +307,6 @@ const SlowDrawGame = () => {
         onTouchMove={handleMove}
         onTouchEnd={handleUp}
       />
-
-      {errorMessage && <div style={{ color: "red", marginTop: "10px" }}>{errorMessage}</div>}
-      {showRestart && (
-        <button
-          onClick={() => restart()}
-          style={{
-            marginTop: "10px",
-            padding: "8px 16px",
-            background: "lightgray",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
-          }}
-        >
-          Restart
-        </button>
-      )}
       {modalVisible && (
         <div className='fixed inset-0 z-[999] flex items-center justify-center px-4'>
           <div

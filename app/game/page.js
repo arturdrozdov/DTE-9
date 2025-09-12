@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 import BackButton from "../components/ui/BackButton";
 import SlowDrawGame from "../components/game/SlowDrawGame";
 
-export default function QuestionsPage() {
+export default function GamePage() {
   const router = useRouter();
   const handleBack = () => {
-    router.push('/notification');
+    router.push('/flashcards');
   };
   return (
     <div className="w-full h-full flex justify-center">
