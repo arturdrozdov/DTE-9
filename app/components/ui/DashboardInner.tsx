@@ -8,7 +8,7 @@ import HiteSummaryCard from "./HiteSummaryCard";
 type StepState = "locked" | "available" | "completed";
 type XpLevel = "Rookie" | "Starter";
 
-const DEFAULT_SCORE = 952;
+const DEFAULT_SCORE = 1059;
 const DEFAULT_LEVEL: XpLevel = "Rookie";
 
 export default function DashboardInner() {

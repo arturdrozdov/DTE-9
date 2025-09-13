@@ -397,7 +397,7 @@ export default function Assessment() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, ease: EASE }}
-                className={`h-28 overflow-y-auto px-1`}
+                className={`h-22 overflow-y-auto px-1`}
               >
                 <p className='text-[20px] text-white leading-snug'>
                   {current.question}
@@ -508,7 +508,7 @@ export default function Assessment() {
         </div>
 
         {/* Bottom */}
-        <div className='px-6 pb-6'>
+        <div className='px-6 pb-6 absolute bottom-10 w-full'>
           {current.id === 2 && textAnswer.trim().length > 0 && (
             <div className='mt-4'>
               <button

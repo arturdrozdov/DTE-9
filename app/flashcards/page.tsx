@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Mousewheel } from "swiper/modules";
 import "swiper/css";
@@ -27,6 +27,7 @@ export default function Flashcards() {
 
   const [userInputs, setUserInputs] = useState<string[]>(["", "", ""]);
   const [showSwipeUp, setShowSwipeUp] = useState(true);
+  const swiperRef = useRef<any>(null);
 
   const handleInputChange = (index: number, value: string) => {
     const newInputs = [...userInputs];
@@ -52,6 +53,24 @@ export default function Flashcards() {
     triggerSwipeUp();
   }, []);
 
+  const handleTextSubmit = () => {
+    if (swiperRef.current) {
+      swiperRef.current.slideNext(); // swipe to next slide
+    }
+  }
+
+  const handleBeforeSlideChange = (swiper) => {
+    console.log(swiper);
+    if (swiper.activeIndex === 0 && !userInputs[0].trim()) {
+      // Prevent swipe if text is empty
+      swiper.allowSlideNext = false;
+      swiper.allowSlidePrev = true;
+    } else {
+      swiper.allowSlideNext = true;
+      swiper.allowSlidePrev = true;
+    }
+  };
+
   return (
     <div className="w-full h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md h-full">
@@ -71,6 +90,15 @@ export default function Flashcards() {
           modules={[Mousewheel]}
           className="h-full"
           onSlideChange={triggerSwipeUp}
+          onSlideChangeTransitionStart={handleBeforeSlideChange}
+          // onSwiper={(swiper) => (swiperRef.current = swiper)}
+          onSwiper={(swiper) => {
+            swiperRef.current = swiper;
+            // On init: block slide next if input empty
+            if (!userInputs[0].trim()) {
+              swiper.allowSlideNext = false;
+            }
+          }}
         >
           {cards.map((card, index) => (
             <SwiperSlide key={index}>
@@ -85,8 +113,19 @@ export default function Flashcards() {
 
                 {index === 0 && (
                   <TextArea
+                    size="sm"
                     value={userInputs[index]}
-                    onChange={(e) => handleInputChange(index, e.target.value)}
+                    // onChange={(e) => handleInputChange(index, e.target.value)}
+                    onChange={(e) => {
+                      handleInputChange(index, e.target.value);
+                      if (swiperRef.current) {
+                        if (e.target.value.trim().length === 0) {
+                          swiperRef.current.allowSlideNext = false; // block if empty
+                        } else {
+                          swiperRef.current.allowSlideNext = true;  // allow if not empty
+                        }
+                      }
+                    }}
                     placeholder="Type your answer..."
                     className="text-white rounded-md p-2 w-full"
                   />
@@ -114,6 +153,18 @@ export default function Flashcards() {
                   />
                 </div>
               )}
+              <div className='px-2 pb-6 absolute bottom-10 w-full'>
+                {index === 0 && userInputs[index].trim().length > 0 && (
+                  <div className='mt-4'>
+                    <button
+                      onClick={handleTextSubmit}
+                      className='w-full max-w-[420px] mx-auto block rounded-3xl px-6 py-3 text-black text-lg font-medium bg-white'
+                    >
+                      Submit
+                    </button>
+                  </div>
+                )}
+              </div>
             </SwiperSlide>
 
           ))}
