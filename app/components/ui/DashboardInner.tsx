@@ -8,7 +8,7 @@ import HiteSummaryCard from "./HiteSummaryCard";
 type StepState = "locked" | "available" | "completed";
 type XpLevel = "Rookie" | "Starter";
 
-const DEFAULT_SCORE = parseInt(localStorage.getItem("finalHite") || "1052");
+const DEFAULT_SCORE = 1052;
 const DEFAULT_LEVEL: XpLevel = "Rookie";
 
 export default function DashboardInner() {
@@ -32,13 +32,8 @@ export default function DashboardInner() {
   const [modalFor, setModalFor] = useState<"train" | "execute" | null>(null);
 
   const readHiteScore = useCallback(() => {
-    try {
       const scoreStr = localStorage.getItem("hiteScore");
-      const parsed = scoreStr ? parseInt(scoreStr, 10) : NaN;
-      setHiteScore(Number.isFinite(parsed) ? parsed : DEFAULT_SCORE);
-    } catch {
-      setHiteScore(DEFAULT_SCORE);
-    }
+      setHiteScore(parseInt(localStorage.getItem("finalHite")) || DEFAULT_SCORE);
   }, []);
 
   const readXpLevel = useCallback(() => {
@@ -415,8 +410,8 @@ export default function DashboardInner() {
                         <div className='flex items-center justify-between'>
                           <div
                             className={`${trainState === "locked"
-                                ? "text-white/60"
-                                : "text-white"
+                              ? "text-white/60"
+                              : "text-white"
                               } text-lg font-medium`}
                           >
                             Train
@@ -517,8 +512,8 @@ export default function DashboardInner() {
                         <div className='flex items-center justify-between'>
                           <div
                             className={`${executeState === "locked"
-                                ? "text-white/60"
-                                : "text-white"
+                              ? "text-white/60"
+                              : "text-white"
                               } text-lg font-medium`}
                           >
                             Execute
