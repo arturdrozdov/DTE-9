@@ -91,10 +91,8 @@ export default function Flashcards() {
           className="h-full"
           onSlideChange={triggerSwipeUp}
           onSlideChangeTransitionStart={handleBeforeSlideChange}
-          // onSwiper={(swiper) => (swiperRef.current = swiper)}
           onSwiper={(swiper) => {
             swiperRef.current = swiper;
-            // On init: block slide next if input empty
             if (!userInputs[0].trim()) {
               swiper.allowSlideNext = false;
             }
@@ -112,28 +110,41 @@ export default function Flashcards() {
                 <p className="text-white text-[16px] text-left">{card.content}</p>
 
                 {index === 0 && (
-                  <TextArea
-                    size="sm"
-                    value={userInputs[index]}
-                    // onChange={(e) => handleInputChange(index, e.target.value)}
-                    onChange={(e) => {
-                      handleInputChange(index, e.target.value);
-                      if (swiperRef.current) {
-                        if (e.target.value.trim().length === 0) {
-                          swiperRef.current.allowSlideNext = false; // block if empty
-                        } else {
-                          swiperRef.current.allowSlideNext = true;  // allow if not empty
+                  <div className="flex flex-col">
+                    <TextArea
+                      size="sm"
+                      value={userInputs[index]}
+                      onChange={(e) => {
+                        handleInputChange(index, e.target.value);
+                        if (swiperRef.current) {
+                          if (e.target.value.trim().length === 0) {
+                            swiperRef.current.allowSlideNext = false; // block if empty
+                          } else {
+                            swiperRef.current.allowSlideNext = true;  // allow if not empty
+                          }
                         }
-                      }
-                    }}
-                    placeholder="Type your answer..."
-                    className="text-white rounded-md p-2 w-full"
-                  />
+                      }}
+                      placeholder="Type your answer..."
+                      className="text-white rounded-md p-2 w-full"
+                    />
+                    <div className='px-2 pb-6 w-full mt-10'>
+                      {index === 0 && userInputs[index].trim().length > 0 && (
+                        <div className='mt-4'>
+                          <button
+                            onClick={handleTextSubmit}
+                            className='w-full max-w-[420px] mx-auto block rounded-3xl px-6 py-3 text-black text-lg font-medium bg-white'
+                          >
+                            Submit
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
                 {index === 2 && (
                   <div className="w-full">
                     <button
-                      className="w-full py-4 rounded-full bg-white text-black font-medium text-lg"
+                      className="w-full py-4 rounded-full bg-white text-black font-medium text-lg mt-8"
                       onClick={() => router.push('/game')}
                     >
                       Start
@@ -153,18 +164,6 @@ export default function Flashcards() {
                   />
                 </div>
               )}
-              <div className='px-2 pb-6 absolute bottom-10 w-full'>
-                {index === 0 && userInputs[index].trim().length > 0 && (
-                  <div className='mt-4'>
-                    <button
-                      onClick={handleTextSubmit}
-                      className='w-full max-w-[420px] mx-auto block rounded-3xl px-6 py-3 text-black text-lg font-medium bg-white'
-                    >
-                      Submit
-                    </button>
-                  </div>
-                )}
-              </div>
             </SwiperSlide>
 
           ))}
