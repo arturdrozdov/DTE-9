@@ -91,7 +91,13 @@ export default function ScorePage() {
 
   useEffect(() => {
     const u0 = daysMV.on("change", (v) => setDaysVal(Math.round(v)));
-    const u1 = hiteMV.on("change", (v) => setHiteDeltaVal(Math.round(v)));
+    const u1 = hiteMV.on("change", (v) => {
+      const numb = Math.round(v);
+      const finalHite = HITE_BASE + numb;
+      localStorage.setItem('finalHite', finalHite.toString())
+      return setHiteDeltaVal(numb);
+    })
+
     const u2 = completedMV.on("change", (v) => setCompletedVal(Math.round(v)));
     const u3 = streakMV.on("change", (v) => setStreakVal(Math.round(v)));
     const u4 = correctMV.on("change", (v) => setCorrectVal(Math.round(v)));
