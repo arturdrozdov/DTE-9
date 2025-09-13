@@ -51,7 +51,7 @@ function ModalContent() {
             </div>
 
             <Button onClick={onSubmit} className="w-full">
-              {isTrain ? "Go to Train" : "Go to Execute"}
+              {isTrain ? "Go to Train" : "Next"}
             </Button>
           </div>
         </div>

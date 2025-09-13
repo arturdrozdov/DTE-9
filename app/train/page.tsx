@@ -62,7 +62,7 @@ export default function FlashCard() {
               {/* Text Content */}
               <div className="w-full flex-1 pt-4 flex flex-col">
                 <h1 className="text-[28px] font-extrabold text-white leading-snug mb-3">
-                  Lorem Ipsum
+                  Mastering Control
                 </h1>
 
                 <p className="text-[15px] text-white/70 leading-relaxed mb-6">
