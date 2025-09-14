@@ -2,16 +2,12 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
-// import BackButton from "@/components/ui/BackButton";
-// import Button from "@/components/ui/Button";
-// import OptionButton from "@/components/OptionButton";
 import { twMerge } from "tailwind-merge";
 import { useRouter } from "next/navigation";
-// import { sendFeedback } from "@/lib/sendFeedback";
+import { sendFeedback } from "../../../lib/sendFeedback";
 import BackButton from "../../components/ui/BackButton";
 import OptionButton from "../../components/ui/OptionButton";
 import Button from "../../components/ui/Button";
-import { sendFeedback } from "../../../lib/sendFeedback";
 
 const DRAFT_KEY = "FEEDBACK_DRAFT";
 
@@ -86,6 +82,43 @@ export default function FeedbackFormPage() {
     setSubmitErr(null);
 
     try {
+      const cleaned = sanitizeName(name);
+
+      await sendFeedback({
+        overallRating: draft.overall,
+        helpfulRating: draft.helpful,
+        engagingRating: draft.engaging,
+        freeText: "",
+        lengthChoice,
+        daysPerWeek: days!,
+        notes,
+        name: cleaned,
+        sheet: "DTE-9",
+        meta: {
+          page: "feedback/form",
+          appVersion: process.env.NEXT_PUBLIC_APP_VERSION || "demo",
+        },
+      });
+
+      const delta = COMPLETED_VAL + STREAK_VAL + CORRECT_ROW_VAL;
+      const finalHiteScore = HITE_BASE + delta;
+
+      try {
+        localStorage.setItem("hiteScore", String(finalHiteScore));
+        localStorage.setItem(
+          "planProgress",
+          JSON.stringify({
+            discover: "completed",
+            train: "completed",
+            execute: "completed",
+          })
+        );
+        localStorage.setItem("__skipExecutePopupOnce", "1");
+
+        localStorage.setItem("profileName", cleaned);
+        sessionStorage.removeItem(DRAFT_KEY);
+      } catch { }
+
       router.replace("/dashboard");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Submit failed";
@@ -97,7 +130,9 @@ export default function FeedbackFormPage() {
 
   return (
     <div className='min-h-dvh relative text-white'>
-      <div className='absolute inset-0 -z-10 bg-cover bg-center' style={{ backgroundImage: `url('/quiz-bg.png')`}}/>
+      <div className='absolute inset-0 -z-10'>
+        <Image src='/bg.png' alt='' fill priority className='object-cover' />
+      </div>
 
       <div className='max-w-md mx-auto px-4 pb-[calc(env(safe-area-inset-bottom,0px)+24px)]'>
         <BackButton onClick={() => router.back()} className='mt-2 mb-4' />

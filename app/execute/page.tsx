@@ -71,23 +71,23 @@ export default function Assessment() {
       {
         id: 1,
         question:
-          "What’s one of the best ways to interrupt a self-doubt spiral?",
+          "When motivation speeds you up, what skill helps you stay steady?",
         position: 1,
         use_common_answer: true,
         score_type: "confidence",
         reverse_scoring: false,
         assessment: 1,
         answers: [
-          "Push through until it fades.",
-          "Make one small commitment you can follow through on.",
-          "Wait for a good performance to feel better.",
+          "Letting your excitement take over",
+          "Matching your rhythm to others",
+          "Using control to smooth your internal pace",
         ],
         correctIndex: 1,
       },
       {
         id: 2,
         question:
-          "Why do you think following through on small commitments helps interrupt doubt?",
+          "Why do you think being able to slow down helps gain mental control?",
         position: 2,
         use_common_answer: true,
         score_type: "composure",
@@ -397,7 +397,7 @@ export default function Assessment() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, ease: EASE }}
-                className={`h-22 overflow-y-auto px-1`}
+                className={`h-16 overflow-y-auto px-1`}
               >
                 <p className='text-[20px] text-white leading-snug'>
                   {current.question}

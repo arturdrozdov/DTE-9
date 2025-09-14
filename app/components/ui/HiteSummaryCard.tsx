@@ -17,6 +17,13 @@ type Props = {
 };
 const EASE = [0.16, 1, 0.3, 1] as const;
 
+function levelBadge(level: string) {
+  if (level === "Starter") {
+    return { bg: "#924AAB", color: "#FFFF00", icon: "🐤" };
+  }
+  return { bg: "#363391", color: "#B2FF8B", icon: "🌱" };
+}
+
 export default function HiteSummaryCard({
   score,
   level,
@@ -27,6 +34,7 @@ export default function HiteSummaryCard({
   timeSpent = "1h 15m",
   onShowMore,
 }: Props) {
+  const badge = levelBadge(level);
   return (
     <motion.div
       className='relative w-full rounded-2xl overflow-hidden border border-white/10'
@@ -39,7 +47,6 @@ export default function HiteSummaryCard({
         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.02)",
       }}
     >
-      {/* декоративный бэкграунд как на рефе */}
       <div
         aria-hidden
         className='absolute inset-0 pointer-events-none'
@@ -75,13 +82,13 @@ export default function HiteSummaryCard({
                     transition={{ duration: 0.35, ease: EASE }}
                     className='inline-flex items-center gap-1 px-2 py-1 rounded-2xl'
                     style={{
-                      backgroundColor: "#363391",
-                      color: "#B2FF8B",
+                      backgroundColor: badge.bg,
+                      color: badge.color,
                       border: "1px solid rgba(255,255,255,0.08)",
                     }}
                   >
                     {/* sprout-emoji как на макете */}
-                    🌱 {level}
+                    {badge.icon} {level}
                   </motion.span>
                 </AnimatePresence>
               </div>
@@ -94,7 +101,7 @@ export default function HiteSummaryCard({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: EASE, delay: 0.35 }}
           >
-            {score}
+            {score.toLocaleString('en-US')}
           </motion.span>
         </div>
 
@@ -128,7 +135,7 @@ export default function HiteSummaryCard({
             <span className='text-[15px]'>Active Streak</span>
           </div>
 
-          <span className='text-[15px] font-semibold'>{streakDays} days</span>
+          <span className='text-[15px] font-semibold'>6 days</span>
         </div>
 
         {/* === Нижняя тёмная полоска со статусами недели === */}

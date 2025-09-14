@@ -32,8 +32,8 @@ export default function DashboardInner() {
   const [modalFor, setModalFor] = useState<"train" | "execute" | null>(null);
 
   const readHiteScore = useCallback(() => {
-      const scoreStr = localStorage.getItem("hiteScore");
-      setHiteScore(parseInt(localStorage.getItem("finalHite")) || DEFAULT_SCORE);
+    const scoreStr = localStorage.getItem("hiteScore");
+    setHiteScore(parseInt(localStorage.getItem("finalHite")) || DEFAULT_SCORE);
   }, []);
 
   const readXpLevel = useCallback(() => {
@@ -210,6 +210,11 @@ export default function DashboardInner() {
            overflow-hidden flex flex-col
           py-6
         '
+        style={{
+          background: "url('/bg.png') center/cover",
+          border: "1px solid rgba(255,255,255,0.04)",
+          boxShadow: "0 30px 60px rgba(0,0,0,0.75)",
+        }}
       >
         <div className='flex-1 overflow-scroll'>
           <div className='px-2 text-white'>

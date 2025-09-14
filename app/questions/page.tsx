@@ -1,538 +1,205 @@
-"use client";
+"use client"
+import React from "react";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion, cubicBezier } from "framer-motion";
+import BackButton from "../components/ui/BackButton";
 
-const EASE = cubicBezier(0.22, 1, 0.36, 1);
+export default function QuestionsPage() {
+  const router = useRouter();
+  const [currentSlide, setCurrentSlide] = useState(1);
+  const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+  const [selectedReason, setSelectedReason] = useState<string | null>(null);
 
-// ---- Types ----
-interface Question {
-    id: number;
-    question: string;
-    position: number;
-    use_common_answer: boolean;
-    score_type:
-    | "composure"
-    | "confidence"
-    | "competitiveness"
-    | "commitment"
-    | string;
-    reverse_scoring: boolean;
-    assessment: number;
-    answers?: string[];
-    correctIndex?: number[];
-}
+  const handleThemeSelect = (theme: string) => {
+    setSelectedTheme(theme);
+    setCurrentSlide(2);
+  };
 
-type StoredAnswer = {
-    questionId: number;
-    score: number;
-    score_type: string;
-    answer: string | null;
-    isCorrect?: boolean;
-    gradable?: boolean;
-};
-
-export default function Assessment() {
-    const router = useRouter();
-
-    const [questions, setQuestions] = useState<Question[]>([]);
-    const [selectedIndex, setSelectedIndex] = useState(0);
-    const [textVisible, setTextVisible] = useState(true);
-    const [fillPercentage, setFillPercentage] = useState(0);
-    const [scores, setScores] = useState<Record<string, number>>({
-        composure: 0,
-        confidence: 0,
-        competitiveness: 0,
-        commitment: 0,
-    });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    const [finalScore, setFinalScore] = useState<number>(0);
-    const [finalLevel, setFinalLevel] = useState<string>("");
-
-    const [textAnswer, setTextAnswer] = useState("");
-
-    const [locked, setLocked] = useState(false);
-    const [reveal, setReveal] = useState<{
-        clicked: number;
-        isCorrect: boolean;
-    } | null>(null);
-
-    const updateProgress = (index: number) => {
-        const total = questions.length || 1;
-        setFillPercentage(Math.floor(((index + 1) / total) * 100));
-    };
-
-    useEffect(() => {
-        const sample: Question[] = [
-            {
-                id: 1,
-                question:
-                    "What do you want to focus on today?",
-                position: 1,
-                use_common_answer: true,
-                score_type: "confidence",
-                reverse_scoring: false,
-                assessment: 1,
-                answers: [
-                    "Control",
-                    "Focus",
-                    "Composure",
-                ],
-                correctIndex: [1],
-            },
-            {
-                id: 2,
-                question:
-                    "How are you feeling about your Control today?",
-                position: 2,
-                use_common_answer: true,
-                score_type: "composure",
-                reverse_scoring: false,
-                assessment: 1,
-                answers: [
-                    "I’ve been steady and composed, even under pressure.",
-                    "I can settle myself pretty well when things get tough.",
-                    "I hold it together sometimes, but not always.",
-                    "I lose control quickly when things go wrong.",
-                    "I feel reactive and scattered most of the time.",
-                ],
-                correctIndex: [0, 1]
-            },
-            {
-                id: 3,
-                question:
-                    "What’s been helping you stay strong in your Control? ",
-                position: 2,
-                use_common_answer: true,
-                score_type: "composure",
-                reverse_scoring: false,
-                assessment: 1,
-                answers: [
-                    "I’m coming off a breakthrough.",
-                    "I’m clear on my goals and making progress.",
-                    "I’m focused and determined.",
-                    "I’m building habits that work for me.",
-                    "I’m pushing myself to lead or improve. ",
-                ],
-                correctIndex: [1]
-            },
-        ];
-
-        const t = setTimeout(() => {
-            setQuestions(sample);
-            setLoading(false);
-        }, 120);
-        return () => clearTimeout(t);
-    }, []);
-
-    useEffect(() => {
-        if (questions.length > 0) {
-            setSelectedIndex(0);
-            setTextVisible(true);
-            setFillPercentage(Math.floor((1 / questions.length) * 100));
-            try {
-                localStorage.setItem("answers", "[]");
-            } catch { }
-        }
-    }, [questions]);
-
-    useEffect(() => {
-        if (questions.length === 0) return;
-        setTextVisible(false);
-        const t = setTimeout(() => {
-            setTextVisible(true);
-            updateProgress(selectedIndex);
-        }, 60);
-        return () => clearTimeout(t);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedIndex, questions.length]);
-
-    const computeAndPersistResults = (aggregate: Record<string, number>) => {
-        let maxPoints = 0;
-        for (const q of questions) {
-            const answersLen = q.answers?.length ?? 1;
-            const qMax = Math.max(answersLen - 1, 0);
-            maxPoints += qMax;
-        }
-        const totalPoints = Object.values(aggregate).reduce(
-            (a, b) => a + (b || 0),
-            0
-        );
-        const denom = maxPoints || 1;
-        const scaled = Math.round((totalPoints / denom) * 1000);
-        setFinalScore(scaled);
-
-        let level = "Rookie";
-        if (scaled >= 750) level = "Elite";
-        else if (scaled >= 500) level = "Pro";
-        setFinalLevel(level);
-
-        let kcTotal = 0;
-        let kcCorrectCount = 0;
-        try {
-            const stored: StoredAnswer[] = JSON.parse(
-                localStorage.getItem("answers") || "[]"
-            );
-            for (const a of stored) {
-                if (a.gradable) {
-                    kcTotal += 1;
-                    if (a.isCorrect) kcCorrectCount += 1;
-                }
-            }
-        } catch { }
-        const kcAllCorrect = kcTotal > 0 && kcCorrectCount === kcTotal;
-        const kcCorrectBonus = kcAllCorrect ? 15 : 0;
-
-        try {
-            localStorage.setItem("hiteScores", JSON.stringify(aggregate));
-            localStorage.setItem("answers", localStorage.getItem("answers") || "[]");
-            localStorage.setItem("showDiscoverPopup", "true");
-            localStorage.setItem("level", level);
-            localStorage.setItem("finalScore", String(scaled));
-
-            localStorage.setItem("kcTotal", String(kcTotal));
-            localStorage.setItem("kcCorrectCount", String(kcCorrectCount));
-            localStorage.setItem("kcAllCorrect", String(kcAllCorrect));
-            localStorage.setItem("kcCorrectBonus", String(kcCorrectBonus));
-
-            // можно параметризовать
-            localStorage.setItem("dteCompletedPoints", "100");
-            localStorage.setItem("dteStreakPoints", "7");
-        } catch { }
-
-        return { scaled, level, kcAllCorrect, kcCorrectBonus };
-    };
-
-    const goNext = () => {
-        const next = selectedIndex + 1;
-        if (next >= questions.length) {
-            try {
-                const stored: StoredAnswer[] = JSON.parse(
-                    localStorage.getItem("answers") || "[]"
-                );
-                const aggregate: Record<string, number> = {};
-                for (const s of stored) {
-                    aggregate[s.score_type] =
-                        (aggregate[s.score_type] || 0) + Number(s.score || 0);
-                }
-                aggregate.composure = aggregate.composure || 0;
-                aggregate.confidence = aggregate.confidence || 0;
-                aggregate.competitiveness = aggregate.competitiveness || 0;
-                aggregate.commitment = aggregate.commitment || 0;
-                computeAndPersistResults(aggregate);
-            } catch {
-                computeAndPersistResults(scores);
-            }
-
-            localStorage.setItem(
-                "planProgress",
-                JSON.stringify({
-                    discover: "completed",
-                    train: "completed",
-                    execute: "completed",
-                })
-            );
-            router.push('/modal?train=true');
-        } else {
-            setSelectedIndex(next);
-            setTextAnswer("");
-            setReveal(null);
-            setLocked(false);
-        }
-    };
-
-    const handleAnswer = (answerIndex: number) => {
-        if (locked) return;
-        const current = questions[selectedIndex];
-        if (!current) return;
-
-        const answers = current.answers ?? [];
-        const pointsForChoice = Math.max(answers.length - 1 - answerIndex, 0);
-
-         const gradable = Array.isArray(current.correctIndex)
-        const isCorrect = gradable ? current.correctIndex.includes(answerIndex) : false;
-        setLocked(true);
-        setReveal({ clicked: answerIndex, isCorrect });
-
-        setScores((prev) => {
-            const copy = { ...prev };
-            copy[current.score_type] =
-                (copy[current.score_type] || 0) + pointsForChoice;
-            return copy;
-        });
-
-        try {
-            const stored: StoredAnswer[] = JSON.parse(
-                localStorage.getItem("answers") || "[]"
-            );
-            stored.push({
-                questionId: current.id,
-                score: pointsForChoice,
-                score_type: current.score_type,
-                answer: answers[answerIndex] ?? null,
-                isCorrect,
-                gradable,
-            });
-            localStorage.setItem("answers", JSON.stringify(stored));
-        } catch { }
-
-        // тайминг как в референсе — мягкий, с тем же EASE
-        setTimeout(goNext, 720);
-    };
-
-    const handleTextSubmit = () => {
-        const current = questions[selectedIndex];
-        if (!current) return;
-
-        const pointsForChoice = 0;
-        try {
-            const stored: StoredAnswer[] = JSON.parse(
-                localStorage.getItem("answers") || "[]"
-            );
-            stored.push({
-                questionId: current.id,
-                score: pointsForChoice,
-                score_type: current.score_type,
-                answer: textAnswer || null,
-                isCorrect: undefined,
-                gradable: false,
-            });
-            localStorage.setItem("answers", JSON.stringify(stored));
-        } catch { }
-
-        setScores((prev) => {
-            const copy = { ...prev };
-            copy[current.score_type] =
-                (copy[current.score_type] || 0) + pointsForChoice;
-            return copy;
-        });
-
-        goNext();
-    };
-
-    const handleBack = () => {
-        if (selectedIndex > 0) {
-            try {
-                const stored: StoredAnswer[] = JSON.parse(
-                    localStorage.getItem("answers") || "[]"
-                );
-                const last = stored.pop();
-                localStorage.setItem("answers", JSON.stringify(stored));
-                if (last) {
-                    setScores((s) => {
-                        const copy = { ...s };
-                        const t = last.score_type;
-                        const val = Number(last.score) || 0;
-                        copy[t] = Math.max(0, (copy[t] || 0) - val);
-                        return copy;
-                    });
-                }
-            } catch { }
-            setSelectedIndex((i) => Math.max(0, i - 1));
-            setReveal(null);
-            setLocked(false);
-        } else {
-            router.back();
-        }
-    };
-
-    // --- UI states ---
-    if (loading) {
-        return (
-            <div className='absolute inset-0 flex items-center justify-center text-white text-2xl'>
-                Loading assessment...
-            </div>
-        );
+  const handleLevelSelect = (level: number) => {
+    if (level > 3) {
+      setSelectedLevel(level);
+      setCurrentSlide(3);
     }
-    if (error) {
-        return (
-            <div className='absolute inset-0 flex flex-col items-center justify-center text-red-500 text-center px-4'>
-                <p className='text-xl'>Error: {error}</p>
-                <p className='text-sm mt-2'>Please try refreshing the page.</p>
-            </div>
-        );
-    }
-    if (questions.length === 0) {
-        return (
-            <div className='absolute inset-0 flex items-center justify-center text-white text-2xl'>
-                No HITE Assessment Questions Found
-            </div>
-        );
-    }
+  };
 
-    const current = questions[selectedIndex];
+  const handleReasonSelect = (reason: string) => {
+    if (reason === "I\’m clear on my goals and making progress.") {
+      setSelectedReason(reason);
+      // Navigate to modal after completing all questions
+      router.push('/modal?train=true');
+    }
+  };
 
-    return (
-        <div className='absolute inset-0  flex items-center justify-center '>
-            <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url('/quiz-bg.png')` }}
-            >
-                {/* decor */}
+  const handleBack = () => {
+    if (currentSlide === 1) {
+      router.push('/notification');
+    } else {
+      setCurrentSlide(currentSlide - 1);
+    }
+  };
+
+  return (
+    <div className="w-full h-full flex justify-center">
+      <div className="min-h-screen max-w-md w-full relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url('/quiz-bg.png')` }}
+        />
+
+        <div className="relative z-10 h-dvh px-4 pt-[1rem] pb-[3.125rem]">
+          <div className="h-full w-full flex flex-col">
+
+            <div className='flex gap-[0.938rem] mb-[3.375rem] items-center'>
+              <BackButton onClick={handleBack} />
+              <span className='font-bold text-2xl'>Discover</span>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mb-[30px]">
+              <div className="w-full h-[10px] bg-white/10 rounded-[12px] overflow-hidden">
                 <div
-                    className='absolute inset-x-0 -top-8 h-48 rounded-t-[22px] pointer-events-none'
-                    style={{
-                        background:
-                            "radial-gradient(800px 120px at 10% 0%, rgba(60,80,140,0.12), transparent 20%), linear-gradient(90deg, rgba(40,50,90,0.06), transparent 40%)",
-                        transform: "translateY(-6%)",
-                    }}
-                    aria-hidden
+                  className="h-full bg-white rounded-[12px] transition-all duration-300 ease-out"
+                  style={{ width: `${(currentSlide / 3) * 100}%` }}
                 />
-
-                {/* content */}
-                <div className='flex-1 overflow-auto'>
-                    <div className='px-2 py-6'>
-                        {/* Header */}
-                        <div className='flex items-center gap-4'>
-                            <button
-                                className='p-1 rounded-full bg-transparent hover:bg-white/6 transition'
-                                onClick={handleBack}
-                                aria-label='Back'
-                            >
-                                <Image src="/arrow.svg" alt='Arrow' width={28} height={28} />
-                            </button>
-                            <h2 className='text-white font-bold text-[20px]'>Discover</h2>
-                        </div>
-
-                        {/* progress */}
-                        <div className='mt-4'>
-                            <div className='w-full bg-white/10 h-2 rounded-full overflow-hidden'>
-                                <div
-                                    className='h-full bg-white rounded-full transition-all duration-500 ease-in-out shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
-                                    style={{ width: `${fillPercentage}%` }}
-                                />
-                            </div>
-                        </div>
-
-                        {/* question */}
-                        <div className='mt-6'>
-                            <motion.div
-                                key={current.id}
-                                initial={{ opacity: 0, y: 8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.35, ease: EASE }}
-                                className={`h-12 overflow-y-auto px-1`}
-                            >
-                                <p className='text-[20px] text-white leading-snug'>
-                                    {current.question}
-                                </p>
-                            </motion.div>
-                        </div>
-
-                        {/* answers */}
-                        <div className='mt-6 flex flex-col items-center gap-4 flex-none h-[50%] overflow-y-auto p-2 mx-1'>
-                            {(
-                                (current.answers ?? []).map((txt, i) => {
-                                    const correctIndexes = Array.isArray(current.correctIndex)
-                                        ? current.correctIndex
-                                        : [current.correctIndex]; // normalize to array
-
-                                    const isCorrectIndex =
-                                        correctIndexes.includes(i);
-                                    let visualState: "idle" | "correct" | "wrong" | "muted" =
-                                        "idle";
-                                    if (reveal) {
-                                        if (isCorrectIndex) visualState = "correct";
-                                        else if (reveal.clicked === i) visualState = "wrong";
-                                        else visualState = "muted";
-                                    }
-
-                                    return (
-                                        <motion.button
-                                            key={i}
-                                            onClick={() => handleAnswer(i)}
-                                            disabled={locked}
-                                            className='group relative w-full max-w-md h-[64px] rounded-[999px] flex items-center justify-start px-6 focus:outline-none'
-                                            aria-label={txt}
-                                            aria-pressed={reveal?.clicked === i}
-                                            initial={false}
-                                            animate={
-                                                visualState === "correct"
-                                                    ? {
-                                                        scale: [1, 1.04, 1],
-                                                        transition: { duration: 0.36, ease: EASE },
-                                                    }
-                                                    : visualState === "wrong"
-                                                        ? {
-                                                            x: [0, -6, 6, -4, 4, 0],
-                                                            transition: { duration: 0.38, ease: EASE },
-                                                        }
-                                                        : { scale: 1, x: 0 }
-                                            }
-                                        >
-                                            {/* base */}
-                                            <div
-                                                className='absolute inset-0 rounded-[999px] '
-                                                style={{
-                                                    background:
-                                                        "linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00))",
-                                                    boxShadow:
-                                                        "inset 0 1px 0 rgba(255,255,255,0.03), 0 6px 30px rgba(0,0,0,0.6)",
-                                                    border: "1px solid rgba(255,255,255,0.06)",
-                                                    opacity: visualState === "muted" ? 0.6 : 1,
-                                                }}
-                                            />
-                                            {/* overlays */}
-                                            <AnimatePresence>
-                                                {visualState === "correct" && (
-                                                    <motion.div
-                                                        key='ok'
-                                                        className='absolute inset-0 rounded-[999px] bg-green-400/15 ring-1 ring-green-400/60'
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                        exit={{ opacity: 0 }}
-                                                        transition={{ duration: 0.3, ease: EASE }}
-                                                    />
-                                                )}
-                                                {visualState === "wrong" && (
-                                                    <motion.div
-                                                        key='bad'
-                                                        className='absolute inset-0 rounded-[999px] bg-red-400/15 ring-1 ring-red-400/60'
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                        exit={{ opacity: 0 }}
-                                                        transition={{ duration: 0.3, ease: EASE }}
-                                                    />
-                                                )}
-                                            </AnimatePresence>
-
-                                            {/* inner border */}
-                                            <div
-                                                className='absolute inset-0 rounded-[999px] pointer-events-none'
-                                                style={{
-                                                    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.03)",
-                                                }}
-                                            />
-
-                                            <span className='relative z-10 text-white text-base font-medium leading-snug text-left'>
-                                                {txt}
-                                            </span>
-                                        </motion.button>
-                                    );
-                                })
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Bottom */}
-                <div className='px-6 pb-6'>
-                    {current.id === 2 && textAnswer.trim().length > 0 && (
-                        <div className='mt-4'>
-                            <button
-                                onClick={handleTextSubmit}
-                                className='w-full max-w-[420px] mx-auto block rounded-3xl px-6 py-3 text-black text-lg font-medium bg-white'
-                            >
-                                Submit
-                            </button>
-                        </div>
-                    )}
-                </div>
+              </div>
             </div>
+
+            {/* Slide 1: Theme Selection */}
+            {currentSlide === 1 && (
+              <div className="flex-1 flex flex-col">
+                <div className="mb-[30px] min-h-[44px] mt-[30px]">
+                  <h2 className="text-[20px] leading-[24px] font-medium text-white">What do you want to focus on today?</h2>
+                </div>
+
+                <div className="flex-1 flex flex-col gap-3">
+                  <button
+                    onClick={() => handleThemeSelect('Control')}
+                    className="w-full flex items-center justify-center h-[60px] bg-[#FFFFFF0A] active:bg-[#FFFFFF26] border border-[#FFFFFF33] rounded-[30px] text-white transition-all"
+                  >
+                    <span className="text-[18px] font-medium">Control</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleThemeSelect('Focus')}
+                    className="w-full flex items-center justify-center h-[60px] bg-[#FFFFFF0A] active:bg-[#FFFFFF26] border border-[#FFFFFF33] rounded-[30px] text-white transition-all"
+                  >
+                    <span className="text-[18px] font-medium">Focus</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleThemeSelect('Composure')}
+                    className="w-full flex items-center justify-center h-[60px] bg-[#FFFFFF0A] active:bg-[#FFFFFF26] border border-[#FFFFFF33] rounded-[30px] text-white transition-all"
+                  >
+                    <span className="text-[18px] font-medium">Composure</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Slide 2: High/Low Route Selection */}
+            {currentSlide === 2 && (
+              <div className="flex-1 flex flex-col">
+                <div className="mb-[30px] min-h-[44px] mt-[30px]">
+                  <h2 className="text-[20px] leading-[24px] font-medium text-white">
+                    How are you feeling about your Control today?
+                  </h2>
+                </div>
+
+                <div className="flex-1 flex flex-col gap-3 text-left">
+                  <button
+                    onClick={() => handleLevelSelect(5)}
+                    className="w-full text-left flex items-center px-[15px] h-[60px] bg-[#FFFFFF26] active:bg-[#FFFFFF26] border border-[#FFFFFF33] rounded-[30px] text-white transition-all"
+                  >
+                    <span className="w-[28px] h-[28px] flex-shrink-0 flex items-center justify-center bg-[#353535] rounded-full mr-2.5 font-bold text-[14px] text-[#FFFFFF80]">5</span><span className="text-[16px] text-white">I’ve been steady and composed, even under pressure.</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleLevelSelect(4)}
+                    className="w-full text-left flex items-center px-[15px] h-[60px] bg-[#FFFFFF0A] active:bg-[#FFFFFF26] border border-[#FFFFFF33] rounded-[30px] text-white transition-all"
+                  >
+                    <span className="w-[28px] h-[28px] flex-shrink-0 flex items-center justify-center bg-[#353535] rounded-full mr-2.5 font-bold text-[14px] text-[#FFFFFF80]">4</span><span className="text-[16px] text-white">I can settle myself pretty well when things get tough.</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleLevelSelect(3)}
+                    className="w-full text-left flex items-center px-[15px] h-[60px] bg-[#FFFFFF0A] active:bg-[#FFFFFF26] border border-[#FFFFFF33] rounded-[30px] text-white transition-all"
+                  >
+                    <span className="w-[28px] h-[28px] flex-shrink-0 flex items-center justify-center bg-[#353535] rounded-full mr-2.5 font-bold text-[14px] text-[#FFFFFF80]">3</span><span className="text-[16px] text-white">I hold it together sometimes, but not always.</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleLevelSelect(2)}
+                    className="w-full text-left flex px-[15px] items-center h-[60px] bg-[#FFFFFF0A] active:bg-[#FFFFFF26] border border-[#FFFFFF33] rounded-[30px] text-white transition-all"
+                  >
+                    <span className="w-[28px] h-[28px] flex-shrink-0 flex items-center justify-center bg-[#353535] rounded-full mr-2.5 font-bold text-[14px] text-[#FFFFFF80]">2</span><span className="text-[16px] text-white">I lose control quickly when things go wrong.</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleLevelSelect(1)}
+                    className="w-full text-left flex items-center px-[15px] h-[60px] bg-[#FFFFFF0A] active:bg-[#FFFFFF26] border border-[#FFFFFF33] rounded-[30px] text-white transition-all"
+                  >
+                    <span className="w-[28px] h-[28px] flex-shrink-0 flex items-center justify-center bg-[#353535] rounded-full mr-2.5 font-bold text-[14px] text-[#FFFFFF80]">1</span><span className="text-[16px] text-white">I feel reactive and scattered most of the time.</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Slide 3: Performance Reason */}
+            {currentSlide === 3 && (
+              <div className="flex-1 flex flex-col">
+                <div className="mb-[30px] min-h-[44px] mt-[30px]">
+                  <h2 className="text-[20px] leading-[24px] font-medium text-white">
+                    What’s been helping you stay strong in your Control?
+                  </h2>
+                </div>
+
+                <div className="flex-1 flex flex-col gap-3">
+                  <button
+                    onClick={() => handleReasonSelect('I\’m coming off a breakthrough.')}
+                    className="w-full flex items-center p-[20px] justify-center h-[60px] bg-[#FFFFFF0A] active:bg-[#FFFFFF26] border border-[#FFFFFF33] rounded-[30px] text-white transition-all"
+
+                  >
+                    <span className="text-[16px] text-left w-full">I’m coming off a breakthrough.</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleReasonSelect('I\’m clear on my goals and making progress.')}
+                    className="w-full flex items-center p-[20px] justify-center h-[60px] bg-[#FFFFFF26] active:bg-[#FFFFFF26] border border-[#FFFFFF33] rounded-[30px] text-white transition-all"
+                  >
+                    <span className="text-[16px] text-left w-full">I’m clear on my goals and making progress.</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleReasonSelect('I\’m focused and determined.')}
+                    className="w-full flex items-center p-[20px] justify-center h-[60px] bg-[#FFFFFF0A] active:bg-[#FFFFFF26] border border-[#FFFFFF33] rounded-[30px] text-white transition-all"
+                  >
+                    <span className="text-[16px] text-left w-full">I’m focused and determined.</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleReasonSelect('I\’m building habits that work for me.')}
+                    className="w-full flex items-center p-[20px] justify-center h-[60px] bg-[#FFFFFF0A] active:bg-[#FFFFFF26] border border-[#FFFFFF33] rounded-[30px] text-white transition-all"
+
+                  >
+                    <span className="text-[16px] text-left w-full">I’m building habits that work for me.</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleReasonSelect('I\’m pushing myself to lead or improve. ')}
+                    className="w-full flex items-center p-[20px] justify-center h-[60px] bg-[#FFFFFF0A] active:bg-[#FFFFFF26] border border-[#FFFFFF33] rounded-[30px] text-white transition-all"
+
+                  >
+                    <span className="text-[16px] text-left w-full">I’m pushing myself to lead or improve. </span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

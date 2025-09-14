@@ -275,7 +275,7 @@ const SlowDrawGame = () => {
     }
   };
 
-  
+
   const handleUp = () => {
     setIsDragging(false);
     setSegmentStartTime(null);
@@ -334,7 +334,9 @@ const SlowDrawGame = () => {
               onClick={onModalAction}
               className='w-full py-3 rounded-full bg-white text-black font-medium'
             >
-              Go to Challenge Phase
+              {modalFor === "calibration"
+                ? "Go to Challenge Phase"
+                : "Next"}
             </button>
           </div>
         </div>

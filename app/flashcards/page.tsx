@@ -26,7 +26,7 @@ export default function Flashcards() {
   const router = useRouter();
 
   const [userInputs, setUserInputs] = useState<string[]>(["", "", ""]);
-  const [showSwipeUp, setShowSwipeUp] = useState(true);
+  const [showSwipeUp, setShowSwipeUp] = useState(false);
   const swiperRef = useRef<any>(null);
 
   const handleInputChange = (index: number, value: string) => {
@@ -41,9 +41,8 @@ export default function Flashcards() {
 
   const triggerSwipeUp = (data?) => {
     const activeIndex = data?.activeIndex || 0;
-    if (activeIndex < cards.length - 1) {
+    if (activeIndex === 1) {
       setShowSwipeUp(true);
-      setTimeout(() => setShowSwipeUp(false), 2000);
     } else {
       setShowSwipeUp(false);
     }
@@ -60,9 +59,7 @@ export default function Flashcards() {
   }
 
   const handleBeforeSlideChange = (swiper) => {
-    console.log(swiper);
     if (swiper.activeIndex === 0 && !userInputs[0].trim()) {
-      // Prevent swipe if text is empty
       swiper.allowSlideNext = false;
       swiper.allowSlidePrev = true;
     } else {
