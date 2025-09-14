@@ -82,7 +82,7 @@ export default function Assessment() {
           "Matching your rhythm to others",
           "Using control to smooth your internal pace",
         ],
-        correctIndex: 1,
+        correctIndex: 2,
       },
       {
         id: 2,

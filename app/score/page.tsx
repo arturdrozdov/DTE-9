@@ -332,7 +332,7 @@ export default function ScorePage() {
                     <span className='tabular-nums'>+{streakVal}</span>
                   </div>
                   <div className='flex items-center justify-between py-0.5 text-white/85'>
-                    <span>Correct Knowledge Check Answer</span>
+                    <span>{kcBonus === 0 ? 'Incorrect Knowledge Check Answer' : 'Correct Knowledge Check Answer'}</span>
                     <span className='tabular-nums'>+{kcBonus}</span>
                   </div>
 
