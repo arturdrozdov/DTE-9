@@ -11,7 +11,7 @@ function ModalContent() {
   const isTrain = searchParams.get("train");
 
   const onSubmit = () => {
-    isTrain ? router.push("/train") : router.push("/execute");
+        isTrain ? router.push("/train") : router.push("/execute");
   };
 
   return (
@@ -50,7 +50,7 @@ function ModalContent() {
               />
             </div>
 
-            <Button onClick={onSubmit} className="w-full">
+            <Button onClick={onSubmit} className="z-[100]">
               {isTrain ? "Go to Train" : "Next"}
             </Button>
           </div>
