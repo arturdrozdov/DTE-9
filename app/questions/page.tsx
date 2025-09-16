@@ -69,7 +69,7 @@ export default function QuestionsPage() {
             {/* Slide 1: Theme Selection */}
             {currentSlide === 1 && (
               <div className="flex-1 flex flex-col">
-                <div className="mb-[30px] min-h-[44px] mt-[30px]">
+                <div className="mb-[30px] min-h-[44px] mt-[12px]">
                   <h2 className="text-[20px] leading-[24px] font-medium text-white">What do you want to focus on today?</h2>
                 </div>
 
@@ -101,9 +101,9 @@ export default function QuestionsPage() {
             {/* Slide 2: High/Low Route Selection */}
             {currentSlide === 2 && (
               <div className="flex-1 flex flex-col">
-                <div className="mb-[30px] min-h-[44px] mt-[30px]">
+                <div className="mb-[30px] min-h-[44px] mt-[12px]">
                   <h2 className="text-[20px] leading-[24px] font-medium text-white">
-                    How are you feeling about your Control today?
+                    How are you feeling about your Control today? (for the purpose of this demo, select something 4 or higher)
                   </h2>
                 </div>
 
@@ -149,9 +149,9 @@ export default function QuestionsPage() {
             {/* Slide 3: Performance Reason */}
             {currentSlide === 3 && (
               <div className="flex-1 flex flex-col">
-                <div className="mb-[30px] min-h-[44px] mt-[30px]">
+                <div className="mb-[30px] min-h-[44px] mt-[12px]">
                   <h2 className="text-[20px] leading-[24px] font-medium text-white">
-                    What’s been helping you stay strong in your Control?
+                    What’s been helping you stay strong in your Control? (for the purpose of this demo, select goal progress)
                   </h2>
                 </div>
 

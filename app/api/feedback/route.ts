@@ -32,8 +32,6 @@ type Body = {
   overallRating?: number | null;     
   helpfulRating?: number | null;     
   engagingRating?: number | null;    
-  freeText?: string;                
-
 
   lengthChoice?: "long" | "right" | "short" | null;
   daysPerWeek?: number | null;      
@@ -115,7 +113,6 @@ export async function POST(req: NextRequest) {
       sanitize(body.lengthChoice ?? ""),
       body.daysPerWeek ?? "",
       sanitize(body.notes ?? ""),
-      sanitize(body.freeText ?? ""),
       sanitize(body.meta ?? {}),
       sanitize(userAgent),
     ];

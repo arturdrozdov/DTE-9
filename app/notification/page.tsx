@@ -42,8 +42,10 @@ export default function NotificationPage() {
                             <Image src="/logo.png" alt="logo" width={38} height={38} />
                         </div>
                         <div className="flex flex-col justify-center flex-1">
-                            <span className="text-white text-[15px] font-semibold tracking-[-1%] leading-[18px] mb-1">🔥 Your DTE plan is waiting!</span>
-                            <span className="text-white text-[14px] font-light tracking-[-1%] leading-[19px]">Time to lock in! Complete today’s Discover, Train, Execute plan.</span>
+                            <span className="text-white text-[15px] font-semibold tracking-[-1%] leading-[18px] mb-1">Train Your Mind</span>
+                            <span className="text-white text-[14px] font-light tracking-[-1%] leading-[19px]">Your DTE is due! Completing it now will keep you on track to meet your weekly goal of four.
+                                
+                            </span>
                         </div>
                     </div>
                 </div>

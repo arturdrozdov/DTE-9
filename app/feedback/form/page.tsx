@@ -88,7 +88,6 @@ export default function FeedbackFormPage() {
         overallRating: draft.overall,
         helpfulRating: draft.helpful,
         engagingRating: draft.engaging,
-        freeText: "",
         lengthChoice,
         daysPerWeek: days!,
         notes,
